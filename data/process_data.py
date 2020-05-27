@@ -4,10 +4,37 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    
+    """
+    loads:
+    The specified message and category data
+    
+    Args:
+        messages_filepath: File path of the messages csv
+        categories_filepath: File path of the categories cv
+    Returns:
+        df (pandas dataframe): Merged messages and categories df.
+    """    
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     # merge datasets
     df = pd.merge(messages,categories,left_on='id',right_on='id')
+    
+    return df
+
+
+def clean_data(df):
+    
+    """Cleans the data:
+        - splits categories into separate columns
+        - converts categories to dummy variables
+        - drops duplicates
+    
+    Args:
+        df (pandas dataframe): combined categories and messages df
+    Returns:
+        df (pandas dataframe): Cleaned dataframe with split categories
+    """
     # create a dataframe of the 36 individual category columns
     categories = df.categories.str.split(pat=';', n=-1, expand=True)
     # select the first row of the categories dataframe
@@ -24,16 +51,19 @@ def load_data(messages_filepath, categories_filepath):
     df.drop(columns='categories',index=1,inplace=True)
     # concatenate the original dataframe with the new `categories` dataframe
     df = pd.concat([df,categories],axis=1)
-    return df
-
-
-def clean_data(df):
     # drop duplicates
     df.drop_duplicates(subset='id',inplace=True)
     return df
 
 
 def save_data(df, database_filename):
+     """Saves the preprocessed data to a sqlite db
+    Args:
+        df (pandas dataframe): The cleaned dataframe
+        database_filename (string): the file path to save the db
+    Returns:
+        None
+    """
     table_name='df_clean'
     engine = create_engine('sqlite:///{}'.format(database_filename))
     df.to_sql(table_name, engine, index=False, if_exists='replace')

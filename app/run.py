@@ -49,6 +49,21 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    ###########################
+    # Number of Messages per Category
+    Mesg_counts = df.iloc[:,5:].sum().sort_values(ascending=False)[1:11]
+    Mesg_names = list(Mesg_counts.index)
+    
+    ###########################
+    
+    # Top 10 categories count
+    top_cat_mean = df.iloc[:,4:].mean().sort_values()[1:11]
+    top_cat_names = list(top_cat_mean.index)
+       
+    #############################
+    
+
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -69,8 +84,57 @@ def index():
                     'title': "Genre"
                 }
             }
-        }
+        },
+        
+        #############################
+        {
+            'data': [
+                Bar(
+                    x=Mesg_names,
+                    y=Mesg_counts,
+                    orientation = 'v',
+                    
+                
+                )
+            ],
+           
+            'layout': {
+                'title': 'Top 10 Number of Messages per Category',
+                
+                'xaxis': {
+                    'title': "Number of Messages"
+                    
+                },
+            }
+        },
+      ########################
+        {
+            'data': [
+                Bar(
+                    x=top_cat_mean,
+                    y=top_cat_names,
+                    orientation = 'h',
+                )
+            ],
+
+            'layout': {
+                'title': 'Top 10 Average Messages Categories',
+                'yaxis': {
+                    'title': "Percentage"
+                },
+                'xaxis': {
+                    'title': "Categories"
+                }
+            }
+        },
+       
+      ########################
     ]
+        
+        
+
+    
+  
     
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]

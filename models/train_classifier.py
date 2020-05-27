@@ -31,6 +31,15 @@ from nltk.tokenize import word_tokenize
 
 def load_data(database_filepath):
     
+    """Connect to the clean sql database generated with process_data.py and split it into feature data (X) and response (Y)
+    Args:
+        database_filepath (str): string filepath of the sqlite database
+    Returns:
+        X (pandas dataframe): Feature data, just the messages
+        Y (pandas dataframe): Classification labels
+        category_names (list): List of the category names for classification
+    """
+    
     # load data from database
     engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_table('df_clean',engine)
@@ -47,6 +56,17 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    
+    """ A function to preprocess data:
+            1.Detect and clean url's
+            2.Remove special characters
+            3.Tokenize Text and remove_stopwords
+            4.lemmatize_text
+            
+        Returns:
+            Clean and preprocessed text 
+    """ 
+    
     default_stopwords = set(stopwords.words("english")) 
     url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
     detected_urls = re.findall(url_regex, text)
@@ -62,6 +82,13 @@ def tokenize(text):
 
 
 def build_model():
+    
+    """Returns the GridSearchCV object to be used as the model
+    Args:
+        None
+    Returns:
+        cv (scikit-learn GridSearchCV): Grid search model object
+    """
    
     pipeline = Pipeline([
 
@@ -86,14 +113,30 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    category_names=Y_test.columns.values
-    Y_pred_test = model.predict(X_test) 
+    """dumps the model to the given filepath
+    Args:
+        model (scikit-learn model): The fitted model
+        model_filepath (string): the filepath to save the model to
+    Returns:
+        None
+    """
+    
+ 
+    #category_names=Y_test.columns.values
+    Y_pred_test = model.predict(X_test)        
     print(classification_report(Y_test.values, Y_pred_test, target_names=category_names))
 
 
 
 
 def save_model(model, model_filepath):
+    """dumps the model to the given filepath
+    Args:
+        model (scikit-learn model): The fitted model
+        model_filepath (string): the filepath to save the model to
+    Returns:
+        None
+    """
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
